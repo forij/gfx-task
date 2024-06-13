@@ -1,0 +1,57 @@
+{
+  "name": "vite-react-typescript-eslint-prettier",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --ext ts,tsx --fix",
+    "prettier": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,css,md}'",
+    "prepare": "husky install",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@react-three/drei": "^9.92.7",
+    "@react-three/fiber": "^8.15.12",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.4.3",
+    "@types/node": "^18.15.12",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "@types/three": "^0.160.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.57.1",
+    "@vitejs/plugin-react": "^4.0.0-beta.0",
+    "eslint": "^8.38.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.3.4",
+    "husky": "^8.0.3",
+    "jsdom": "^21.1.2",
+    "leva": "0.9",
+    "lint-staged": "^13.2.1",
+    "prettier": "^2.8.7",
+    "r3f-perf": "7.1",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.0",
+    "vitest": "^0.30.1"
+  },
+  "lint-staged": {
+    "src/**/*.{ts?(x),js?(x)}": [
+      "eslint"
+    ],
+    "src/**/*.{ts?(x),js?(x),json,css,md}": [
+      "prettier --write"
+    ]
+  }
+}
