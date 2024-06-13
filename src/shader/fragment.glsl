@@ -4,6 +4,7 @@ uniform vec2 uPointB;
 uniform vec2 uPointC;
 uniform float uThickness;
 uniform int uLineJoinType;
+uniform vec3 uColor;
 
 float pointToSegmentDistance(vec2 P, vec2 P0, vec2 P1) {
     vec2 v = P1 - P0;
@@ -29,7 +30,7 @@ void main() {
   float distanceToAB = pointToSegmentDistance(vUv, uPointA, uPointB);
   float distanceToBC = pointToSegmentDistance(vUv, uPointB, uPointC);
   if (distanceToAB < uThickness / 2. || distanceToBC < uThickness / 2.) {
-    gl_FragColor = vec4(1., 0., 0., 1.0);  
+    gl_FragColor = vec4(uColor, 1.0);  
   } else {
     gl_FragColor = vec4(0., 0.2 , 0.2, 0.3);
   }

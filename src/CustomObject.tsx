@@ -1,29 +1,40 @@
-import { DoubleSide, Uniform, Vector2 } from 'three'
-import fragmentShader from './shader/fragment.glsl?raw'
-import vertexShader from './shader/vertex.glsl?raw'
-import { useState } from 'react'
+import { Vector3 } from 'three'
+import { useControls } from 'leva'
+import { PlaneMesh } from './PlaneMesh'
 
-export const CustomObject = () => {
-  const [lineJoinType, setLineJoinType] = useState(1)
+const NUM_OBJECT = 1000
+
+export const CustomObjects = () => {
+  const controls = useControls({
+    lineJoinType: { options: [1, 2, 3] },
+    renderManyObjects: false,
+  })
 
   return (
-    <mesh>
-      <planeGeometry
-        attach={'geometry'}
-        args={[10, 10, 256, 256]}
+    <>
+      <PlaneMesh
+        position={new Vector3(controls.renderManyObjects ? -5 : 0, 0, 0)}
+        lineJoinType={controls.lineJoinType}
       />
-      <shaderMaterial
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        side={DoubleSide}
-        uniforms={{
-          uPointA: new Uniform(new Vector2(0.1, 0.7)),
-          uPointB: new Uniform(new Vector2(0.7, 0.7)),
-          uPointC: new Uniform(new Vector2(0.1, 0.1)),
-          uThickness: new Uniform(0.1),
-          uLineJoinType: new Uniform(lineJoinType),
-        }}
-      />
-    </mesh>
+
+      {controls.renderManyObjects &&
+        Array.from({ length: NUM_OBJECT }).map((_, index) => {
+          return (
+            <PlaneMesh
+              key={index}
+              position={
+                new Vector3(
+                  3 + Math.random() * 10,
+                  Math.random() * 10 - 5,
+                  Math.random()
+                )
+              }
+              scale={new Vector3(0.1, 0.1, 1)}
+              lineJoinType={controls.lineJoinType}
+              color={new Vector3(Math.random(), Math.random(), Math.random())}
+            />
+          )
+        })}
+    </>
   )
 }

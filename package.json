@@ -38,7 +38,7 @@
     "eslint-plugin-react-refresh": "^0.3.4",
     "husky": "^8.0.3",
     "jsdom": "^21.1.2",
-    "leva": "0.9",
+    "leva": "~0.9.35",
     "lint-staged": "^13.2.1",
     "prettier": "^2.8.7",
     "r3f-perf": "7.1",
