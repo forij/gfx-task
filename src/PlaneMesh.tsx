@@ -15,6 +15,7 @@ import vertexShader from './shader/vertex.glsl?raw'
 interface Props {
   position: Vector3
   lineJoinType: number
+  animate: boolean
   scale?: Vector3
   color?: Vector3
 }
@@ -24,13 +25,14 @@ export const PlaneMesh: React.FC<Props> = ({
   lineJoinType,
   scale,
   color,
+  animate,
 }) => {
   const refShaderMaterial = useRef<ShaderMaterial>(null)
 
   const uniforms = useMemo(
     () => ({
       uPointA: new Uniform(new Vector2(0.1, 0.7)),
-      uPointB: new Uniform(new Vector2(0.7, 0.7)),
+      uPointB: new Uniform(new Vector2(0.5, 0.5)),
       uPointC: new Uniform(new Vector2(0.1, 0.1)),
       uThickness: new Uniform(0.1),
       uLineJoinType: new Uniform(lineJoinType),
@@ -42,6 +44,16 @@ export const PlaneMesh: React.FC<Props> = ({
   if (refShaderMaterial.current) {
     refShaderMaterial.current.uniforms.uLineJoinType.value = lineJoinType
   }
+
+  useFrame(() => {
+    if (!refShaderMaterial.current) return
+    if (!animate) return
+
+    refShaderMaterial.current.uniforms.uPointC.value.x =
+      Math.sin(Date.now() / 1000) * 0.3 + 0.5
+    refShaderMaterial.current.uniforms.uPointC.value.y =
+      Math.cos(Date.now() / 1000) * 0.3 + 0.5
+  })
 
   return (
     <mesh

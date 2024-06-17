@@ -14,6 +14,7 @@ export const CustomObjects = () => {
       },
     },
     renderManyObjects: false,
+    animate: true,
   })
 
   return (
@@ -21,6 +22,7 @@ export const CustomObjects = () => {
       <PlaneMesh
         position={new Vector3(controls.renderManyObjects ? -5 : 0, 0, 0)}
         lineJoinType={controls.lineJoinType}
+        animate={controls.animate}
       />
 
       {controls.renderManyObjects &&
