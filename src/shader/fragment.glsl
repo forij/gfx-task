@@ -26,12 +26,30 @@ float pointToSegmentDistance(vec2 P, vec2 P0, vec2 P1) {
     return length(P - closestPoint);
 }
 
-void main() {
+vec4 drawRound(){
   float distanceToAB = pointToSegmentDistance(vUv, uPointA, uPointB);
   float distanceToBC = pointToSegmentDistance(vUv, uPointB, uPointC);
   if (distanceToAB < uThickness / 2. || distanceToBC < uThickness / 2.) {
-    gl_FragColor = vec4(uColor, 1.0);  
+    return vec4(uColor, 1.0);  
   } else {
-    gl_FragColor = vec4(0., 0.2 , 0.2, 0.3);
+    return vec4(0., 0.2 , float(uLineJoinType), 0.3);
+  }
+}
+
+vec4 drawBevel(){
+  return vec4(0.0, 0.5, 0.5, 1.0);
+}
+
+vec4 drawMiter(){
+   return vec4(0.5, 0.5, 0.0, 1.0);
+}
+
+void main() {
+  if(uLineJoinType == 1){
+      gl_FragColor = drawRound();
+  } else if(uLineJoinType == 2) {
+      gl_FragColor = drawMiter();
+  } else {
+      gl_FragColor = drawBevel();
   }
 }

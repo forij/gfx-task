@@ -6,7 +6,13 @@ const NUM_OBJECT = 1000
 
 export const CustomObjects = () => {
   const controls = useControls({
-    lineJoinType: { options: [1, 2, 3] },
+    lineJoinType: {
+      options: {
+        Round: 1,
+        Miter: 2,
+        Bevel: 3,
+      },
+    },
     renderManyObjects: false,
   })
 
