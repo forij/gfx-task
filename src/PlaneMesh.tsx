@@ -1,4 +1,14 @@
-import { Vector3, Uniform, Vector2, DoubleSide, AdditiveBlending } from 'three'
+import {
+  AdditiveBlending,
+  DoubleSide,
+  Mesh,
+  ShaderMaterial,
+  Uniform,
+  Vector2,
+  Vector3,
+} from 'three'
+import { useFrame } from '@react-three/fiber'
+import { useEffect, useMemo, useRef } from 'react'
 import fragmentShader from './shader/fragment.glsl?raw'
 import vertexShader from './shader/vertex.glsl?raw'
 
@@ -15,6 +25,24 @@ export const PlaneMesh: React.FC<Props> = ({
   scale,
   color,
 }) => {
+  const refShaderMaterial = useRef<ShaderMaterial>(null)
+
+  const uniforms = useMemo(
+    () => ({
+      uPointA: new Uniform(new Vector2(0.1, 0.7)),
+      uPointB: new Uniform(new Vector2(0.7, 0.7)),
+      uPointC: new Uniform(new Vector2(0.1, 0.1)),
+      uThickness: new Uniform(0.1),
+      uLineJoinType: new Uniform(lineJoinType),
+      uColor: new Uniform(color ?? new Vector3(1, 0, 0)),
+    }),
+    []
+  )
+
+  if (refShaderMaterial.current) {
+    refShaderMaterial.current.uniforms.uLineJoinType.value = lineJoinType
+  }
+
   return (
     <mesh
       position={position}
@@ -26,19 +54,13 @@ export const PlaneMesh: React.FC<Props> = ({
       />
       <shaderMaterial
         attach='material'
-        uniforms={{
-          uPointA: new Uniform(new Vector2(0.1, 0.7)),
-          uPointB: new Uniform(new Vector2(0.7, 0.7)),
-          uPointC: new Uniform(new Vector2(0.1, 0.1)),
-          uThickness: new Uniform(0.1),
-          uLineJoinType: new Uniform(lineJoinType),
-          uColor: new Uniform(color ?? new Vector3(1, 0, 0)),
-        }}
+        uniforms={uniforms}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         side={DoubleSide}
         transparent
         blending={AdditiveBlending}
+        ref={refShaderMaterial}
       />
     </mesh>
   )
