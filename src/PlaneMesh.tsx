@@ -15,7 +15,7 @@ import vertexShader from './shader/vertex.glsl?raw'
 interface Props {
   position: Vector3
   lineJoinType: number
-  animate: boolean
+  animate?: boolean
   scale?: Vector3
   color?: Vector3
 }

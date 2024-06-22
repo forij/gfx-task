@@ -54,6 +54,14 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* 
+  HOT-FIX: Canvas background color change in dark mode. 
+  I was set to white, to provide the screenshots with the same bg in report.
+*/
+canvas {
+  background: #fff;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
