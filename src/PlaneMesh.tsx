@@ -6,18 +6,18 @@ import {
   Uniform,
   Vector2,
   Vector3,
-} from 'three'
-import { useFrame } from '@react-three/fiber'
-import { useEffect, useMemo, useRef } from 'react'
-import fragmentShader from './shader/fragment.glsl?raw'
-import vertexShader from './shader/vertex.glsl?raw'
+} from "three";
+import { useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
+import fragmentShader from "./shader/fragment.glsl?raw";
+import vertexShader from "./shader/vertex.glsl?raw";
 
 interface Props {
-  position: Vector3
-  lineJoinType: number
-  animate?: boolean
-  scale?: Vector3
-  color?: Vector3
+  position: Vector3;
+  lineJoinType: number;
+  animate?: boolean;
+  scale?: Vector3;
+  color?: Vector3;
 }
 
 export const PlaneMesh: React.FC<Props> = ({
@@ -27,7 +27,7 @@ export const PlaneMesh: React.FC<Props> = ({
   color,
   animate,
 }) => {
-  const refShaderMaterial = useRef<ShaderMaterial>(null)
+  const refShaderMaterial = useRef<ShaderMaterial>(null);
 
   const uniforms = useMemo(
     () => ({
@@ -36,24 +36,26 @@ export const PlaneMesh: React.FC<Props> = ({
       uPointC: new Uniform(new Vector2(0.1, 0.1)),
       uThickness: new Uniform(0.1),
       uLineJoinType: new Uniform(lineJoinType),
-      uColor: new Uniform(color ?? new Vector3(1, 0, 0)),
+      // I try to use some nice colors as default https://colorhunt.co/palette/211951836fff15f5baf0f3ff
+      uJointColor: new Uniform(color ?? new Vector3(21 / 255, 245 / 255, 186 / 255)),
+      uColor: new Uniform(color ?? new Vector3(33 / 255, 25 / 255, 81 / 255)),
     }),
-    []
-  )
+    [],
+  );
 
   if (refShaderMaterial.current) {
-    refShaderMaterial.current.uniforms.uLineJoinType.value = lineJoinType
+    refShaderMaterial.current.uniforms.uLineJoinType.value = lineJoinType;
   }
 
   useFrame(() => {
-    if (!refShaderMaterial.current) return
-    if (!animate) return
+    if (!refShaderMaterial.current) return;
+    if (!animate) return;
 
     refShaderMaterial.current.uniforms.uPointC.value.x =
-      Math.sin(Date.now() / 1000) * 0.3 + 0.5
+      Math.sin(Date.now() / 1000) * 0.3 + 0.5;
     refShaderMaterial.current.uniforms.uPointC.value.y =
-      Math.cos(Date.now() / 1000) * 0.3 + 0.5
-  })
+      Math.cos(Date.now() / 1000) * 0.3 + 0.5;
+  });
 
   return (
     <mesh
@@ -61,11 +63,11 @@ export const PlaneMesh: React.FC<Props> = ({
       scale={scale ?? new Vector3(1, 1, 1)}
     >
       <planeGeometry
-        attach={'geometry'}
+        attach={"geometry"}
         args={[10, 10, 256, 256]}
       />
       <shaderMaterial
-        attach='material'
+        attach="material"
         uniforms={uniforms}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
@@ -75,5 +77,5 @@ export const PlaneMesh: React.FC<Props> = ({
         ref={refShaderMaterial}
       />
     </mesh>
-  )
-}
+  );
+};
