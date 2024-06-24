@@ -4,8 +4,9 @@ uniform vec2 uPointB;
 uniform vec2 uPointC;
 uniform float uThickness;
 uniform int uLineJoinType;
-uniform vec3 uColor;
 uniform vec3 uJointColor;
+
+varying vec3 vColor;
 
 // https://en.wikibooks.org/wiki/Fractals/shadertoy
 float pointToSegmentDistance(vec2 p, vec2 a, vec2 b) {
@@ -20,7 +21,7 @@ vec4 drawRound() {
   float distanceToAB = pointToSegmentDistance(vUv, uPointA, uPointB);
   float distanceToBC = pointToSegmentDistance(vUv, uPointB, uPointC);
   if(distanceToAB < uThickness / 2. || distanceToBC < uThickness / 2.) {
-    return vec4(uColor, 1.0);
+    return vec4(vColor, 1.0);
   } else {
     return vec4(0., 0.2, 1.0, 0.3);
   }
@@ -84,7 +85,7 @@ vec4 drawMiter() {
   bool isInsideBC = isInsideSegmentRectangle(vUv, uPointB, uPointC, uThickness);
 
   if(isInsideAB || isInsideBC) {
-    return vec4(uColor, 1.0);
+    return vec4(vColor, 1.0);
   }
 
   if(isInsideMiterJoint(vUv, uPointA, uPointB, uPointC, uThickness)) {
@@ -120,7 +121,7 @@ vec4 drawBevel() {
   bool isInsideBC = isInsideSegmentRectangle(vUv, uPointB, uPointC, uThickness);
 
   if(isInsideAB || isInsideBC) {
-    return vec4(uColor, 1.0);
+    return vec4(vColor, 1.0);
   }
 
   // Draw the bevel joint

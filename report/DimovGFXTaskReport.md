@@ -18,7 +18,8 @@
     - [Measure the performance](#measure-the-performance)
     - [Geometry optimization](#geometry-optimization)
     - [Instancing](#instancing)
-    - [Shader optimization](#shader-optimization)
+    - [Instancing random color for each instance](#instancing-random-color-for-each-instance)
+  - [Conclusion](#conclusion)
 
 ## Setup
 
@@ -506,18 +507,209 @@ Now we have significantly fewer triangles, but each triangle is drawn one by one
 
 NOTE: The downside of this method is that all planes will be rendered even if only one is within the camera frustum.
 
-Because we already have 120 fps when render 1000 object, lets increase the amount of objects to 10 000. 
+Because we already have 120 FPS when rendering 1,000 objects, let's increase the number of objects to 10,000. With this many objects, we again experience a drop to around 20 FPS. 
 
 <p align="center">
     <img src="image-25.png" height="250" />
 </p>
 
-### Shader optimization
+1. Change the mesh to instancedMesh, get ref from instancedMesh.
 
+```typescript 
+const refInstancedMesh = useRef<any>(null);
 
+return (
+  <instancedMesh
+    args={[null, null, instanceMatrixes.length]}
+    ref={refInstancedMesh}
+  >
+   ...
+```
 
-<style>
-	img{
-        object-fit: contain;
+2. Rename the PlaneMesh to PlaneInstancedMesh, and add to props instanceMatrixes.
+
+```typescript
+export const PlaneInstancedMesh: React.FC<Props> = ({
+  position,
+  lineJoinType,
+  scale,
+  color,
+  animate,
+  instanceMatrixes,
+}) => {
+  const defaultMatrix = new Matrix4().compose(
+    position,
+    new Quaternion(),
+    scale ?? new Vector3(1, 1, 1),
+  );
+  instanceMatrixes = instanceMatrixes ?? [defaultMatrix];
+```
+
+3. Add use effect to update the position of the instances. 
+  
+```typescript
+  useEffect(() => {
+    if (!refInstancedMesh.current) return;
+
+    for(let i = 0; i < instanceMatrixes.length; i++) {
+      refInstancedMesh.current.setMatrixAt(i, instanceMatrixes[i]);
     }
-</style>
+
+    refInstancedMesh.current.instanceMatrix.needsUpdate = true;
+  }, [instanceMatrixes]);
+```
+4. Update the vertex shader to use the instanceMatrix. [link](https://discourse.threejs.org/t/texture-offset-for-instanced-mesh-using-custom-shaders/42211)
+
+```glsl
+varying vec2 vUv;
+
+void main() {
+  vUv = uv;
+
+  gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position,1.0);
+}
+```
+
+Now we have the same, result as before, but with the instancing. 
+
+<p align="center">
+    <img src="image-26.png" height="250" />
+</p>
+
+For improve the performance we should update the generation of the 10,000 objects in CustomObject component. 
+
+```typescript
+const instanceMatrixes: Matrix4[] = [];
+
+  if (controls.renderManyObjects) {
+    for (let i = 0; i < NUM_OBJECT; i++) {
+      const matrix = new Matrix4().compose(
+        new Vector3(
+          3 + Math.random() * 10,
+          Math.random() * 10 - 5,
+          Math.random(),
+        ),
+        new Quaternion(),
+        new Vector3(0.1, 0.1, 1),
+      );
+      instanceMatrixes.push(matrix);
+    }
+  }
+
+  ...
+
+   {controls.renderManyObjects &&
+        (
+          <PlaneInstancedMesh
+            lineJoinType={controls.lineJoinType}
+            color={new Vector3(Math.random(), Math.random(), Math.random())}
+            animate={controls.animate}
+            instanceMatrixes={instanceMatrixes}
+            instancesAmount={NUM_OBJECT}
+          />
+        )}
+
+```
+<p  align="center">
+    <img src="image-27.png" height="250" />
+</p>
+
+Now it's good result. 10000 object 20002 triangles, 2 draw calls and stable 120 FPS.
+
+### Instancing random color for each instance
+
+Now we have a good performance, but we have a unique matrix for each instance, but the color is the same for all instances. 
+
+Do some refactoring instead of instanceMatrixes, we will have instanceData that contains all necessary data for each instance. 
+
+```typescript
+export interface IInstanceData{
+  matrix: Matrix4;
+  color?: Vector3;
+}
+
+... 
+
+interface Props {
+  ...
+  // For instanced mesh
+  instancesAmount?: number;
+  instancesData?: IInstanceData[];
+}
+
+...
+
+export const PlaneInstancedMesh: React.FC<Props> = ({
+  ...
+  instancesData,
+  instancesAmount,
+}) => {
+  const defaultMatrix = new Matrix4().compose(
+    position ?? new Vector3(),
+    new Quaternion(),
+    scale ?? new Vector3(1, 1, 1),
+  );
+  instancesData = instancesData ?? [{ matrix: defaultMatrix, color }];
+```
+
+Then update fragment and vertex shader. Add varyings vColor. 
+
+```glsl vert
+varying vec2 vUv;
+varying vec3 vColor;
+
+void main() {
+  vUv = uv;
+
+  vColor = instanceColor;
+  gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position,1.0);
+}
+```
+  
+```glsl frag
+varying vec2 vUv;
+uniform vec2 uPointA;
+uniform vec2 uPointB;
+...
+
+varying vec3 vColor;
+...
+
+// replace all uColor to vColor
+
+vec4 drawRound() {
+  float distanceToAB = pointToSegmentDistance(vUv, uPointA, uPointB);
+  float distanceToBC = pointToSegmentDistance(vUv, uPointB, uPointC);
+  if(distanceToAB < uThickness / 2. || distanceToBC < uThickness / 2.) {
+    return vec4(vColor, 1.0);
+  } else {
+    return vec4(0., 0.2, 1.0, 0.3);
+  }
+}
+
+...
+```
+Update the CustomObject component to generate the random color for each instance. 
+
+```typescript
+...
+  new Quaternion(),
+  new Vector3(0.1, 0.1, 1),
+);
+const color = new Vector3(Math.random(), Math.random(), Math.random());
+instancesData.push({matrix, color});
+...
+```
+
+Now for each instance, we have a unique color.
+
+<p  align="center">
+    <img src="image-28.png" height="250" />
+</p>
+
+
+## Conclusion
+
+During this task, I implemented the bevel and miter joints for the line. I also optimized the performance by reducing the number of triangles and draw calls. I used instancing to draw all the triangles in a single draw call. I also added the ability to generate random colors for each instance. 
+
+Thank you for this task. It was interesting to work on it. I hope my report will be understandable, if not or if you have any questions, please let me know. We also could setup a review call if needed. (=
