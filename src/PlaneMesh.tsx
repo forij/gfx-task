@@ -64,7 +64,7 @@ export const PlaneMesh: React.FC<Props> = ({
     >
       <planeGeometry
         attach={"geometry"}
-        args={[10, 10, 256, 256]}
+        args={[10, 10, 1, 1]}
       />
       <shaderMaterial
         attach="material"

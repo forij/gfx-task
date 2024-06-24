@@ -2,7 +2,7 @@ import { Vector3 } from 'three'
 import { useControls } from 'leva'
 import { PlaneMesh } from './PlaneMesh'
 
-const NUM_OBJECT = 1000
+const NUM_OBJECT = 10000
 
 export const CustomObjects = () => {
   const controls = useControls({

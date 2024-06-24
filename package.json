@@ -41,7 +41,7 @@
     "leva": "~0.9.35",
     "lint-staged": "^13.2.1",
     "prettier": "^2.8.7",
-    "r3f-perf": "7.1",
+    "r3f-perf": "^7.2.1",
     "typescript": "^5.0.2",
     "vite": "^4.3.0",
     "vitest": "^0.30.1"

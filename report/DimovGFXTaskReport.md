@@ -16,6 +16,7 @@
     - [Miter joint](#miter-joint)
   - [Performance Optimization](#performance-optimization)
     - [Measure the performance](#measure-the-performance)
+    - [Geometry optimization](#geometry-optimization)
     - [Instancing](#instancing)
     - [Shader optimization](#shader-optimization)
 
@@ -392,7 +393,124 @@ The miter joint is working. However, as we observed in the second picture, somet
 
 ### Measure the performance
 
+Before start the optimization we need to measure the performance. Optimization base on personal feelings is not a good idea.
+As a tool for profiling, I use the [r3f-perf](https://www.npmjs.com/package/r3f-perf). It would be enough as start point, if we need some extra detail we could use the Chrome DevTools, or [spector.js](https://spector.babylonjs.com/).
+
+<p align="center">
+    <img src="image-14.png" height="250" />
+</p>
+
+NOTE: The r3r-pref is a dev tool, and should be removed from the production build. For this reason I move it to separate DevTools component, and load the r3f thought the dynamic import. 
+
+```typescript
+export function DevTools() {
+  const [prefComponent, setPrefComponent] = useState<any>(null);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") {
+      return;
+    }
+
+    const importComponent = async () => {
+      const { Perf } = await import("r3f-perf");
+      setPrefComponent(<Perf position="top-left" />);
+    };
+
+    importComponent();
+  }, []);
+
+  return prefComponent;
+}
+```
+
+vite-bundle-visualizer:
+
+<p align="center">
+    <img src="image-15.png" height="250" />
+</p>
+<p align="center">
+  Without dynamic import, r3f-perf is included in the bundle
+</p>
+
+<p align="center">
+    <img src="image-16.png" height="250" />
+</p>
+<p align="center">
+  With dynamic import, r3f-pref has been moved to the separate chunk
+</p>
+
+When we render only one object, the performance is good at 120 FPS with 1 draw call. However, when we render 1,000 objects, the FPS drops significantly. Additionally, during the generation of the 1,000 objects, we experience have a freeze to several seconds.
+
+<p align="center">
+    <img src="image-20.png" height="250" />
+</p>
+
+Spike on the graph it's a freeze during the generation of the 1,000 objects. 
+
+During the performance optimization our goal it's to reduce the amount of draw calls, vertices, and shader compute complexity.
+
+Our start point: 
+- 21 fps, 
+- 1,001 draw calls
+- 131203072 triangles
+
+### Geometry optimization
+
+When we draw a single plane, r3f-pref indicates that we have 131,072 triangles, but it should be only 2 triangles. Let's examine how the plane geometry is being created.
+
+```typescript
+  <planeGeometry
+      attach={"geometry"}
+      args={[10, 10, 256, 256]}
+    />
+```
+
+Here a issue. The last two args 256, 256 it's a amount on each side. So we have 256 * 256 = 65 536 rectangles. Each rectangle has 2 triangles. So we have 131 072 triangles.
+
+<p align="center">
+    <img src="image-21.png" height="250" />
+</p>
+
+How it's looks now, we have a lot of triangles. But for display the plane we need only the 1 rectangle. 
+
+```typescript
+  <planeGeometry
+      attach={"geometry"}
+      args={[10, 10, 1, 1]}
+    />
+```
+
+After the optimization our plane geometry looks like this:
+
+<p align="center">
+    <img src="image-22.png" height="250" />
+</p>
+
+After optimization singe plane has only 2 triangles.
+<p align="center">
+    <img src="image-23.png" height="250" />
+</p>
+
+1000 objects 2002 triangles.
+
+<p align="center">
+    <img src="image-24.png" height="250" />
+</p>
+
+After just one optimization, we have already significantly improved the performance, achieving a stable 120 FPS.
+
+
 ### Instancing 
+
+Now we have significantly fewer triangles, but each triangle is drawn one by one, which is not optimal. We could use instancing to draw all the triangles in a single draw call. 
+
+NOTE: The downside of this method is that all planes will be rendered even if only one is within the camera frustum.
+
+Because we already have 120 fps when render 1000 object, lets increase the amount of objects to 10 000. 
+
+<p align="center">
+    <img src="image-25.png" height="250" />
+</p>
 
 ### Shader optimization
 
