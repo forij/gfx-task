@@ -1,3 +1,7 @@
+# Solution of the task
+
+Open [report](https://github.com/forij/gfx-task/blob/main/report/DimovGFXTaskReport.md)
+
 # LottieFiles shader challenge starter code
 
 Welcome to the LottieFiles Shader Challenge! This project will help us assess your skills in WebGL graphics and GLSL shader programming. Below are the instructions to get started and the tasks you need to complete.
