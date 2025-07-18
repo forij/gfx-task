@@ -1,6 +1,8 @@
-# Solution of the task
+# My solution of test task on position Graphics Engineer for web
 
-Open [report](https://github.com/forij/gfx-task/blob/main/report/DimovGFXTaskReport.md)
+For saw detatil report of the task open [report](https://github.com/forij/gfx-task/blob/main/report/DimovGFXTaskReport.md)
+
+Below is the task definition.
 
 # LottieFiles shader challenge starter code
 
